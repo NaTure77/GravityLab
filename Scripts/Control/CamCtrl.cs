@@ -77,7 +77,7 @@ public class CamCtrl : MonoBehaviour {
         {
             if (Time.deltaTime != 0)
             {
-                Follow();
+                //Follow();
                 ChangeHeading(deltaX, -deltaY);
 
             }
@@ -173,7 +173,7 @@ public class CamCtrl : MonoBehaviour {
                     Cursor.visible = false;
                 }
 
-                if (hit.collider.CompareTag("Ground") && !StateManager.isFlying)
+                if (hit.collider.CompareTag("Ground") && !StateManager.isFlying && !hit.transform.gameObject.Equals(MoveController.instance.currentGruond))
                 {
 
                     //if (!MoveController.instance.isJumping && !MoveController.instance.currentGruond.Equals(hit.collider.gameObject)) break;
@@ -187,7 +187,7 @@ public class CamCtrl : MonoBehaviour {
                         //StartCoroutine(MoveController.instance.Jump(MoveController.instance.jumpPower));
                         //Debug.Log(Vector3.Distance(MoveController.instance.transform.position, hit.point));
 
-                        StartCoroutine(GroundChanger.instance.ChangeGroundOnJump(hit.transform, hit.point));
+                        StartCoroutine(GroundChanger.instance.ChangeGroundOnJump(hit.transform,hit.normal, hit.point));
                     }
                 }
                 else StageUI.instance.DisableTargetInfo();

@@ -5,6 +5,7 @@ using UnityEngine;
 public class MoveController : MonoBehaviour {
 
     public static MoveController instance;// 웨폰 공격 상태 채크에 사용
+    public GameObject player;
     public float jumpPower = 10;
     public float moveSpeed = 8f;
     private float currentSpeed = 0;
@@ -27,8 +28,9 @@ public class MoveController : MonoBehaviour {
     private void Awake()
     {
         instance = this;
+        player = GameObject.Find("Player");
         rgb = GetComponent<Rigidbody>();
-        animator = GetComponent<Animator>();
+        animator = player.GetComponent<Animator>();
         camTransform = GameObject.Find("CamTransform").GetComponent<Transform>();
         AttackArea = GameObject.Find("AttackArea").GetComponent<Transform>();
         StartLogic();
@@ -44,7 +46,6 @@ public class MoveController : MonoBehaviour {
         while(true)
         {
             if (StateManager.keySet.jump && isGrounded && !isJumping) StartCoroutine(Jump(jumpPower));
-
             if (isJumping) animator.SetBool("Jump", true);
             else animator.SetBool("Jump", false);
             if (!StateManager.keySet.aim) Walk_Default();
@@ -56,7 +57,7 @@ public class MoveController : MonoBehaviour {
             else animator.SetBool("aimMode", false);
             if (StateManager.keySet.moveKey)
             {
-                if (isGrounded && !StateManager.isFlying)
+                if (isGrounded & !StateManager.isFlying)
                 {
                     if (!isJumping) IncreaseSpeed();
                     else DecreaseSpeed();
@@ -91,7 +92,7 @@ public class MoveController : MonoBehaviour {
         {
 
             Debug.DrawRay(Vector3.zero, transform.forward, Color.cyan);
-            if (isJumping || StateManager.isFlying || StateManager.isGroundChanging)
+            if (isJumping || StateManager.isFlying)
             {
                 //UpdateDeltaQ();
                 yield return null;
@@ -151,8 +152,8 @@ public class MoveController : MonoBehaviour {
     {
         if (!StateManager.keySet.moveKey) return;
 
-        float tempX = transform.localEulerAngles.x;
-        float tempZ = transform.localEulerAngles.z;
+        float tempX = player.transform.localEulerAngles.x;
+        float tempZ = player.transform.localEulerAngles.z;
 
         Quaternion q = Quaternion.identity;
 
@@ -196,7 +197,7 @@ public class MoveController : MonoBehaviour {
         // deltaQ.eulerAngles = Vector3.Lerp(deltaQ.eulerAngles, q.eulerAngles, rotSpeed * Time.deltaTime);
 
 
-        transform.localEulerAngles = new Vector3(tempX, (camTransform.localRotation * deltaQ).eulerAngles.y, tempZ);
+        player.transform.localEulerAngles = new Vector3(tempX, (camTransform.localRotation * deltaQ).eulerAngles.y, tempZ);
         deltaQ = Quaternion.Lerp(deltaQ, q, rotSpeed * Time.smoothDeltaTime);
 
         //transform.rotation = Quaternion.Lerp(transform.rotation, camTransform.rotation * q, rotSpeed * Time.deltaTime);
@@ -207,23 +208,20 @@ public class MoveController : MonoBehaviour {
     void Walk_Default()
     {
         //Vector3 moveDir = Vector3.forward;
-        //transform.Translate(moveDir.normalized * currentSpeed * Time.smoothDeltaTime, Space.Self);
+       // transform.Translate(moveDir.normalized * currentSpeed * Time.smoothDeltaTime, Space.Self);
         
-        Vector3 v = transform.rotation * Vector3.forward * moveSpeed;
-        //v.y = rgb.velocity.y;
-        //rgb.velocity += v;
-
+        Vector3 v = player.transform.rotation * Vector3.forward;
         rgb.MovePosition(transform.position + (v.normalized * currentSpeed * Time.deltaTime));
         animator.SetFloat("runSpeed", currentSpeed / 30.0f + 0.5f);
     }
     void DoRotate_Aimed()
     {
-        float tempX = transform.localEulerAngles.x;
-        float tempZ = transform.localEulerAngles.z;
+        float tempX = player.transform.localEulerAngles.x;
+        float tempZ = player.transform.localEulerAngles.z;
         Quaternion q = Quaternion.identity;
         q.eulerAngles = Vector3.zero;
 
-        transform.localEulerAngles = new Vector3(tempX, (camTransform.localRotation * deltaQ).eulerAngles.y, tempZ);
+        player.transform.localEulerAngles = new Vector3(tempX, (camTransform.localRotation * deltaQ).eulerAngles.y, tempZ);
         deltaQ = Quaternion.Lerp(deltaQ, q, rotSpeed * Time.smoothDeltaTime);
 
         
@@ -235,7 +233,7 @@ public class MoveController : MonoBehaviour {
     }
     void Walk_Aimed()
     {
-        Vector3 moveDir = transform.rotation * ((Vector3.forward * StateManager.keySet.v) + (Vector3.right * StateManager.keySet.h));
+        Vector3 moveDir = transform.rotation*  ((Vector3.forward * StateManager.keySet.v) + (Vector3.right * StateManager.keySet.h));
         if(currentSpeed > aimSpeed) currentSpeed -= Time.deltaTime * 70;
         if (currentSpeed < aimSpeed) currentSpeed += Time.deltaTime * 30;
         rgb.MovePosition(transform.position + (moveDir.normalized * currentSpeed * Time.deltaTime));
@@ -246,7 +244,7 @@ public class MoveController : MonoBehaviour {
     {
         isJumping = true;
         float speed = currentSpeed;
-        animator.SetFloat("JumpSpeed", 1);
+        animator.SetFloat("JumpSpeed", 1 +  (currentSpeed / moveSpeed));
         yield return new WaitUntil(() => animator.GetCurrentAnimatorStateInfo(0).IsName("JUMP00"));
         yield return new WaitWhile(() => animator.GetCurrentAnimatorStateInfo(0).normalizedTime % 1 < 0.15f);// wait for animation sink
         Vector3 v = new Vector3(rgb.velocity.x, power, rgb.velocity.z);
@@ -254,13 +252,12 @@ public class MoveController : MonoBehaviour {
         f.y = 0;
         rgb.AddForce(transform.rotation * v, ForceMode.Impulse);
         yield return new WaitWhile(() => isGrounded);
+        rgb.AddForce(player.transform.rotation * f, ForceMode.Force);
         //yield return new WaitWhile(() => animator.GetCurrentAnimatorStateInfo(0).normalizedTime % 1 < 0.3f);
-        //yield return new WaitForSeconds(0.4f);
-        //animator.SetFloat("JumpSpeed", 0);
         bool isStoppedAnim = false;
         while (!isGrounded)
         {
-            rgb.AddForce(transform.rotation * f, ForceMode.Force);
+
             if (animator.GetCurrentAnimatorStateInfo(0).normalizedTime % 1 > 0.3f && !isStoppedAnim)
             {
                 animator.SetFloat("JumpSpeed", 0);
@@ -280,24 +277,30 @@ public class MoveController : MonoBehaviour {
             RaycastHit hit;
             while (true)
             {
-                Debug.DrawRay(transform.position + transform.rotation * Vector3.up*0.1f, transform.rotation * Vector3.down * dist * 0.1f, Color.red, Time.deltaTime);
-                if (Physics.Raycast(transform.position + transform.rotation * Vector3.up * 0.1f, transform.rotation * Vector3.down * dist * 0.1f, out hit, dist))
+                Debug.DrawRay(player.transform.position + player.transform.rotation * Vector3.up*0.1f, player.transform.rotation * Vector3.down * dist * 0.1f, Color.red, Time.deltaTime);
+                if (Physics.Raycast(player.transform.position + player.transform.rotation * Vector3.up * 0.1f, player.transform.rotation * Vector3.down * dist * 0.1f, out hit, dist))
                 {
+                    Debug.Log(hit.normal.normalized + "," + transform.up.normalized);
                     if (hit.collider.tag == "Ground")
                     {
+
+                        if(Vector3.Angle(hit.normal.normalized,transform.up.normalized) != 0) StartCoroutine(GroundChanger.instance.ChangeGroundOnWalk(hit.transform, hit.normal));
                         if (hit.collider.gameObject.Equals(currentGruond)) isGrounded = true;
-                        else if(!StateManager.isFlying && !StateManager.isGroundChanging)
+                        else if (!StateManager.isFlying && !StateManager.isGroundChanging)
                         {
                             //Debug.Log(currentGruond.name);
-                            StartCoroutine(GroundChanger.instance.ChangeGroundOnWalk(hit.transform, hit.point));
+                            StartCoroutine(GroundChanger.instance.ChangeGroundOnWalk(hit.transform,hit.normal));
                         }
+                        else if (StateManager.isGroundChanging) isGrounded = true;
                     }
                 }
+                else if (StateManager.isGroundChanging) isGrounded = true;
                 else
                 {
                     isGrounded = false;
+                    currentGruond = null;
                 }
-                if (Vector3.Distance(transform.position, hit.point) != 0 && !StateManager.isFlying && !isJumping) addGravityForce();
+                if (Vector3.Distance(player.transform.position, hit.point) != 0 && !StateManager.isFlying && !isJumping) addGravityForce();
                 yield return null;
             }
         }
