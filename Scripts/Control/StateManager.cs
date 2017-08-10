@@ -9,6 +9,9 @@ public class StateManager : MonoBehaviour {
     public static bool useSmallUI = false;//SmallUITool
     public static bool isFlying = false;
     public static bool isGroundChanging = false;
+
+    public static bool isGrounded = true;
+    public static bool isJumping = false;
     public static class keySet
     {
         public static bool front;

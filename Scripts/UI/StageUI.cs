@@ -15,16 +15,9 @@ public class StageUI :UIManager {
 
     public GameObject TargetInfo;
     public Text TargetName;
-    //public bool InventoryEnabled = false;
 
     public GameObject triggerUI;
-    //public static Text textHP;
-    //public static Text textCoin;
-    /*class keySet
-    {
-        public static bool Inventory;
-        public static bool Pause;
-    }*/
+
     void Awake()
     {
         LoadUI();
@@ -39,7 +32,7 @@ public class StageUI :UIManager {
         if (InventoryUI != null)
             InventoryUI.SetActive(false);
         StartCoroutine(GetESC());
-        StartCoroutine(GetKey());
+        //StartCoroutine(GetKey());
     }
     new public void LoadUI()
     {
@@ -60,11 +53,6 @@ public class StageUI :UIManager {
         ItemDock = GameObject.Find("ItemDock");
 
         triggerUI = GameObject.Find("Trigger UI");
-
-        //textHP = GameObject.Find("textHP").GetComponent<Text>();
-        //textCoin = GameObject.Find("textCoin").GetComponent<Text>();
-        //UpdateHP();
-        //UpdateCoin();
     }
 
     IEnumerator GetESC()
@@ -73,15 +61,16 @@ public class StageUI :UIManager {
         {
             if (Input.GetKeyDown(KeyCode.Escape))
             {
-                if (StateManager.InventoryEnabled) ToggleInventory(false);
-                else if (!StateManager.isPaused) Pause();
+                //if (StateManager.InventoryEnabled) ToggleInventory(false);
+                //else 
+                if (!StateManager.isPaused) Pause();
                 else Resume();
             }
             yield return null;
             //yield return new WaitForEndOfFrame();
         }
     }
-    IEnumerator GetKey()
+    /*IEnumerator GetKey()
     {      
         while(true)
         {
@@ -96,19 +85,12 @@ public class StageUI :UIManager {
             }
             yield return null;
         }
-    }
+    }*/
     public void UpdateTime(int t)
     {
         //textTime.text = "Time" + t.ToString();
     }
-    /* public static void UpdateHP()
-     {
-         textHP.text = "HP" + PlayerState.HP.ToString();
-     }
-     public static void UpdateCoin()
-     {
-         textCoin.text = "Coin" + PlayerState.Coin.ToString();
-     }*/
+
 
     public void goMainMenu()
     {
@@ -119,12 +101,17 @@ public class StageUI :UIManager {
         TargetName.text = name;
         TargetInfo.SetActive(true);
     }
+
+    public void ShowDistance(int distance)
+    {
+        TargetName.text += "\n" + (distance).ToString() + "m";
+    }
     public void DisableTargetInfo()
     {
         TargetInfo.SetActive(false);
     }
 
-    public void ToggleInventory(bool B)
+    /*public void ToggleInventory(bool B)
     {
         InventoryUI.SetActive(B);
         StateManager.InventoryEnabled = B;
@@ -137,7 +124,7 @@ public class StageUI :UIManager {
             Cursor.lockState = CursorLockMode.None;
         }
         else Cursor.lockState = CursorLockMode.Locked;
-    }
+    }*/
 
     public void ToggleTriggerUI(bool t)
     {

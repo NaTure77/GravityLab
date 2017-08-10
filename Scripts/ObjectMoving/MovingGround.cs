@@ -16,7 +16,8 @@ public class MovingGround : MonoBehaviour {
     {
         while(true)
         {
-            transform.Rotate(0,rotateSpeed * Time.deltaTime,0);
+            //transform.Rotate(0,rotateSpeed * Time.deltaTime,0);
+            rgb.AddTorque(Vector3.up * rotateSpeed);
             Debug.DrawRay(transform.position, transform.up.normalized * 10, Color.red);
             yield return new WaitForFixedUpdate();
         }

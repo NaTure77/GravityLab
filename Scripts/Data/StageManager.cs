@@ -24,8 +24,6 @@ public class StageManager : MonoBehaviour {
     }
     public static void SaveTempData(string nextSceneName)
     {
-        PlayerPrefs.SetFloat("Current HP", PlayerState.HP);
-        PlayerPrefs.SetInt("Current Coin", PlayerState.Coin);
         PlayerPrefs.SetString("Next Scene", nextSceneName);//로딩에 사용하기 위한 임시 저장.
     }
 
@@ -38,8 +36,8 @@ public class StageManager : MonoBehaviour {
     }
     public static void LoadTempData()
     {
-        PlayerState.HP = PlayerPrefs.GetFloat("Current HP");
-        PlayerState.Coin = PlayerPrefs.GetInt("Current Coin");
+       // PlayerState.HP = PlayerPrefs.GetFloat("Current HP");
+       // PlayerState.Coin = PlayerPrefs.GetInt("Current Coin");
     }
     
     //하위 클래스에서 소규모 스테이지가 있을 경우 오버라이딩.
@@ -54,21 +52,21 @@ public class StageManager : MonoBehaviour {
         LoadTempData();
         NextStage(SceneManager.GetActiveScene().name);
     }
-    public static void GetDamaged(float x)
+    public static void GetDamaged(float x ,System.Action<float> SetHP)
     {
         if (x < 0) return;
-        PlayerState.HP -= x;
+        SetHP(-x);
         //StageUI.UpdateHP();
     }
-    public static void GetHP(float x)
+    public static void GetHP(float x, System.Action<float> SetHP)
     {
         if (x < 0) return;
-        PlayerState.HP += x;
+        SetHP(x);
         //StageUI.UpdateHP();
     }
-    public static void GetCoin(int x)
+    public static void GetCoin(int x ,System.Action<int> SetCoin)
     {
         if (x < 0) return;
-        PlayerState.Coin += x;
+        SetCoin(x);
     }
 }

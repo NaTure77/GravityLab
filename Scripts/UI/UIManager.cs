@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
 using UnityEngine.SceneManagement;
-//UI의 아버지.
+//UI의 최상루트.
 public class UIManager : MonoBehaviour {
 
     public static UIManager instance;
@@ -40,7 +40,7 @@ public class UIManager : MonoBehaviour {
     {
         Time.timeScale = 1;
         StateManager.isPaused = false;
-        StageManager.SaveTempData(100, PlayerState.Coin,name);
+        StageManager.SaveTempData(100, 0,name);
         SceneManager.LoadScene("Loading");
     }
 
@@ -66,8 +66,6 @@ public class UIManager : MonoBehaviour {
 
     public void Restart()
     {
-        //MousePointCtrl.active = true;
-       // Cursor.visible = false;
         Time.timeScale = 1;
         StateManager.isPaused = false;
         StageManager.LoadTempData();
