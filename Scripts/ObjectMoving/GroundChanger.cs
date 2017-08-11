@@ -12,7 +12,7 @@ public class GroundChanger : MonoBehaviour {
         MoveController.instance.resetVelocity(Vector3.zero);
         if (!StateManager.isJumping) Jump();
         yield return new WaitWhile(() => StateManager.isGrounded);
-        MoveController.instance.currentGruond = groundT.gameObject;
+        StateManager.currentGround = groundT.gameObject;
 
         //Set 
         float angle = Vector3.Angle(playerObj.up.normalized, normal.normalized);
@@ -50,28 +50,29 @@ public class GroundChanger : MonoBehaviour {
         playerObj.rotation = toRotation;
 
         MoveController.instance.resetVelocity(Vector3.zero);
+        MoveController.instance.addGravityForce();
         StateManager.isFlying = false;
         Debug.Log("FlyFin");
     }
     public static IEnumerator ChangeGroundOnWalk(Transform playerObj, Transform groundT,Vector3 normal)
     {
         StateManager.isGroundChanging = true;
-        MoveController.instance.currentGruond = groundT.gameObject;
+        StateManager.currentGround = groundT.gameObject;
 
         float angle = Vector3.Angle(playerObj.up.normalized, normal.normalized);
         Vector3 outerProduct = Vector3.Cross(playerObj.up.normalized, normal.normalized);
         Quaternion fromRotation = playerObj.rotation;
         Quaternion toRotation = Quaternion.AngleAxis(angle, outerProduct) * fromRotation;
         float fromToRate = 0;
-        float totalTime = 0.4f;
+        float totalTime = 0.6f;
 
-        while (fromToRate < 1 && MoveController.instance.currentGruond == (groundT.gameObject))
+        while (fromToRate < 1 && StateManager.currentGround == (groundT.gameObject))
         {
             playerObj.rotation = Quaternion.LerpUnclamped(fromRotation, toRotation, fromToRate);
             fromToRate += Time.deltaTime / totalTime;
             yield return null;
         }
-        if (MoveController.instance.currentGruond == (groundT.gameObject))
+        if (StateManager.currentGround == (groundT.gameObject))
         {
             playerObj.rotation = toRotation;
             StateManager.isGroundChanging = false;

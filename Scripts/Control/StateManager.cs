@@ -9,7 +9,7 @@ public class StateManager : MonoBehaviour {
     public static bool useSmallUI = false;//SmallUITool
     public static bool isFlying = false;
     public static bool isGroundChanging = false;
-
+    public static GameObject currentGround = null;
     public static bool isGrounded = true;
     public static bool isJumping = false;
     public static class keySet
@@ -26,6 +26,7 @@ public class StateManager : MonoBehaviour {
         public static bool jump;
         public static float h;
         public static float v;
+        public static bool interact;
     }
 
     void resetAll()
@@ -35,6 +36,7 @@ public class StateManager : MonoBehaviour {
         useSmallUI = false;
         isFlying = false;
         isGroundChanging = false;
+        currentGround = null;
     }
     void Awake()
     {
@@ -54,8 +56,16 @@ public class StateManager : MonoBehaviour {
             keySet.right = Input.GetKey(KeyCode.D);
             keySet.moveKey = keySet.front || keySet.left || keySet.back || keySet.right;
             keySet.attack = Input.GetKey(KeyCode.Mouse0) && !Input.GetKeyUp(KeyCode.Mouse0)&& !(InventoryEnabled || isPaused || useSmallUI);
-            keySet.aim = (Input.GetKey(KeyCode.Mouse1) || keySet.attack) &&!isPaused;
+            keySet.aim = (Input.GetKey(KeyCode.Mouse1) || keySet.attack || useSmallUI) &&!isPaused;
             keySet.jump = Input.GetKeyDown(KeyCode.Space);
+            keySet.interact = Input.GetKeyDown(KeyCode.Q);
+
+            if (useSmallUI && keySet.interact)
+            {
+                useSmallUI = false;
+                keySet.interact = false;
+            }
+            
             yield return null;
         }
     }

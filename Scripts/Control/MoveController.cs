@@ -30,7 +30,7 @@ public class MoveController : MonoBehaviour {
     private Rigidbody rgb;
     private Transform camTransform;
     public Animator animator;
-    public GameObject currentGruond;
+
     private Quaternion deltaQ = Quaternion.identity;
 
     delegate void WorkList();
@@ -53,12 +53,18 @@ public class MoveController : MonoBehaviour {
         while (true)
         {
             workList = null;
-
             workList += animatorUpdate;
             workList += Walk_Default;
             workList += UpdateDeltaQ;
             workList += DecreaseSpeed;
 
+            if (StateManager.useSmallUI)
+            {
+                workList -= Walk_Default;
+                workList();
+                yield return null;
+                continue;
+            }
             if (StateManager.keySet.moveKey)
             {
                 workList -= UpdateDeltaQ;
@@ -93,44 +99,13 @@ public class MoveController : MonoBehaviour {
             yield return null;
         }
     }
-    IEnumerator CheckGround()
-    {
-        while (true)
-        {
-            float dist = transform.lossyScale.y * 2;
-            RaycastHit hit;
-            while (true)
-            {
-                Debug.DrawRay(player.transform.position + player.transform.rotation * Vector3.up * dist, player.transform.rotation * Vector3.down * (dist + 0.5f), Color.red, Time.deltaTime);
-                if (Physics.Raycast(player.transform.position + player.transform.rotation * Vector3.up * dist, player.transform.rotation * Vector3.down, out hit, dist + 0.5f))
-                {
-                    if (hit.collider.tag == "Ground" && !StateManager.isFlying)
-                    {
-                        if (Vector3.Angle(hit.normal.normalized, transform.up.normalized) != 0) StartCoroutine(GroundChanger.ChangeGroundOnWalk(this.transform,hit.transform, hit.normal));
-                        if (hit.collider.gameObject.Equals(currentGruond)) StateManager.isGrounded = true;
-                        else if (!StateManager.isFlying && !StateManager.isGroundChanging)
-                        {
-                            StartCoroutine(GroundChanger.ChangeGroundOnWalk(this.transform, hit.transform, hit.normal));
-                        }
-                        else if (StateManager.isGroundChanging) StateManager.isGrounded = true;
-                    }
-                }
-                else if (StateManager.isGroundChanging) StateManager.isGrounded = true;
-                else
-                {
-                    StateManager.isGrounded = false;
-                    currentGruond = null;
-                }
-                if (Vector3.Distance(player.transform.position, hit.point) != 0 && !StateManager.isFlying && !StateManager.isJumping) addGravityForce();
-                yield return null;
-            }
-        }
-    }
+    
     public IEnumerator JumpLogic(float power)
     {
         StateManager.isJumping = true;
         float speed = currentSpeed;
-        animator.SetFloat("JumpSpeed", 1 + (currentSpeed / moveSpeed));
+        currentSpeed = 0;
+        animator.SetFloat("JumpSpeed", 1 + (speed / moveSpeed));
         yield return new WaitUntil(() => animator.GetCurrentAnimatorStateInfo(0).IsName("JUMP00"));
         yield return new WaitWhile(() => animator.GetCurrentAnimatorStateInfo(0).normalizedTime % 1 < 0.15f);// wait for animation sinc
         Vector3 v = new Vector3(rgb.velocity.x, power, rgb.velocity.z);
@@ -158,7 +133,6 @@ public class MoveController : MonoBehaviour {
     void StartLogic()
     {
         StartCoroutine(MainLoop());
-        StartCoroutine(CheckGround());
     }
     void DoRotate_Default()
     {
@@ -228,8 +202,8 @@ public class MoveController : MonoBehaviour {
 
     void animatorUpdate()
     {
-        animator.SetBool("aimMode", currentSpeed != 0 && StateManager.keySet.aim);
-        animator.SetBool("Run", currentSpeed != 0 || StateManager.keySet.moveKey);
+        animator.SetBool("aimMode", currentSpeed != 0 && StateManager.keySet.aim && !StateManager.useSmallUI);
+        animator.SetBool("Run", (currentSpeed != 0 || StateManager.keySet.moveKey) && !StateManager.useSmallUI && !StateManager.keySet.aim);
         animator.SetBool("Jump", StateManager.isJumping);
     }
     void IncreaseSpeed()

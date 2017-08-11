@@ -36,7 +36,6 @@ public class CamCtrl : MonoBehaviour {
         CrossHair = GameObject.Find("CrossHair");
         CrossHair.SetActive(false);
         cam = GameObject.Find("Main Camera");
-        StartCoroutine(awareWorld());
         StartCoroutine(DoLogic());
         StartCoroutine(NotPassWall(cam.transform,GameObject.Find("RaycastPos").transform));
     }
@@ -51,8 +50,9 @@ public class CamCtrl : MonoBehaviour {
             deltaX = Input.GetAxisRaw("Mouse X") * sensitivityX;
             if (Time.deltaTime != 0)
             {
-                if (!isWallCrashed)
-                    SetCameraMode(CamPos,StateManager.keySet.aim);
+                //if (!isWallCrashed)
+                    SetCameraMode(CamPos,StateManager.keySet.aim && !StateManager.useSmallUI);
+
                 ChangeHeading(deltaX, -deltaY);
             }
             yield return new WaitForEndOfFrame();
@@ -83,62 +83,20 @@ public class CamCtrl : MonoBehaviour {
         CrossHair.SetActive(enableCrossHair);
         cam.transform.localPosition = Vector3.Lerp(cam.transform.localPosition, CamPos, Time.deltaTime * 7);
     }
-    IEnumerator awareWorld()
-    {
-        float enabledDir = 1000;
-        Vector2 input = new Vector2(Screen.width / 2.0f, Screen.height / 2.0f);
-        RaycastHit hit;
-        while (true)
-        {
-            Ray ray = Camera.main.ScreenPointToRay(input);
-            if (Physics.Raycast(ray, out hit, enabledDir))
-            {
-                if (hit.collider.CompareTag("Panel"))
-                {
-                    Cursor.lockState = CursorLockMode.Confined;
-                    Cursor.visible = true;
-                    StateManager.useSmallUI = true;
-
-                }
-                else if (!(StateManager.isPaused))
-                {
-                    Cursor.lockState = CursorLockMode.Locked;
-                    StateManager.useSmallUI = false;
-                    Cursor.visible = false;
-                }
-
-                if (hit.collider.CompareTag("Ground") && !StateManager.isFlying && !hit.transform.gameObject.Equals(MoveController.instance.currentGruond))
-                {
-                    StageUI.instance.EnableTargetInfo(hit.collider.name);
-                    StageUI.instance.ShowDistance((int)Vector3.Distance(MoveController.instance.player.transform.position, hit.point));
-                    StageUI.instance.TargetInfo.transform.position = input + Vector2.up * Screen.height * 0.2f;
-                    Debug.DrawRay(Vector3.zero, hit.transform.forward, Color.yellow);
-                    if (Input.GetKey(KeyCode.Z))
-                    {
-                        StartCoroutine(GroundChanger.ChangeGroundOnJump(MoveController.instance.transform,hit.transform,hit.normal, hit.point,() => StartCoroutine(MoveController.instance.JumpLogic(4))));
-                    }
-                }
-                else StageUI.instance.DisableTargetInfo();
-            }
-            else
-            {
-                StageUI.instance.DisableTargetInfo();
-            }
-            yield return new WaitForEndOfFrame();
-        }
-    }
+    
 
     IEnumerator NotPassWall(Transform cam, Transform RaycastPos)
     {
         float dist = cam.transform.localPosition.z * -1;
         float raySphereradious = 0.5f;
+        float maxDistanceBetweenPlayer = 6.5f;
         RaycastHit hit;
         while (true)
         {
             RaycastPos.LookAt(cam);
             dist = cam.transform.localPosition.z * -1;
-            Debug.DrawRay(RaycastPos.position, RaycastPos.forward * dist, Color.red, Time.deltaTime);
-            if (Physics.SphereCast(RaycastPos.position, raySphereradious, RaycastPos.forward, out hit, dist))
+
+            if (Physics.SphereCast(RaycastPos.position, raySphereradious, RaycastPos.forward, out hit, dist)&&Vector3.Distance(RaycastPos.position, cam.transform.position)<= maxDistanceBetweenPlayer)
             {
                 isWallCrashed = true;
                 cam.transform.position = RaycastPos.position + RaycastPos.forward * hit.distance;
