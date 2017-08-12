@@ -92,9 +92,8 @@ public class MoveController : MonoBehaviour {
 
             if(StateManager.keySet.jump && !StateManager.isJumping)
             {
-                workList += () => StartCoroutine(JumpLogic(jumpPower));
+                workList += () => { StartCoroutine(JumpLogic(jumpPower)); };
             }
-
             workList();
             yield return null;
         }
