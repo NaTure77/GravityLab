@@ -8,11 +8,9 @@ public class CamCtrl : MonoBehaviour {
     public float sensitivityY = 8F;
     public float sensitivityX = 8F;
     public GameObject CrossHair;
-
     float y = 0f;
     float x = 0f;
-
-    GameObject cam;
+    public GameObject cam;
     Vector3 DefaultCamPos = new Vector3(0, 0, -6.5f);
     Vector3 AimCamPos = new Vector3(-1.3f, 0, -2f);
     Vector3 CamPos {
@@ -30,14 +28,15 @@ public class CamCtrl : MonoBehaviour {
     private void Awake()
     {
         instance = this;
+
+        StateManager.isPlayerMaked = true;
     }
     private void Start()
     {
         CrossHair = GameObject.Find("CrossHair");
         CrossHair.SetActive(false);
-        cam = GameObject.Find("Main Camera");
         StartCoroutine(DoLogic());
-        StartCoroutine(NotPassWall(cam.transform,GameObject.Find("RaycastPos").transform));
+        StartCoroutine(NotPassWall(cam.transform, GameObject.Find("RaycastPos").transform));
     }
 
     private IEnumerator DoLogic()

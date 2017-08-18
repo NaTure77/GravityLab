@@ -1,9 +1,11 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.EventSystems;
 
 public class StateManager : MonoBehaviour {
 
+    public static bool isPlayerMaked = false;
     public static bool isPaused = false;// UIManager
     public static bool InventoryEnabled = false;//StageUI
     public static bool useSmallUI = false;//SmallUITool
@@ -64,6 +66,7 @@ public class StateManager : MonoBehaviour {
             {
                 useSmallUI = false;
                 keySet.interact = false;
+                EventSystem.current.SetSelectedGameObject(null);
             }
             
             yield return null;

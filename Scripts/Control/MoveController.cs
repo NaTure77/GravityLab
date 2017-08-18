@@ -2,16 +2,14 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
-
 public class MoveController : MonoBehaviour {
 
     public static MoveController instance;// 웨폰 공격 상태 채크에 사용
 
-    public float jumpPower = 10;
-    public float runSpeed = 10;
+    public float jumpPower = 6;
+    public float runSpeed = 100;
     public float walkSpeed = 5;
-    public float rotSpeed = 30;
-
+    public float rotSpeed = 5;
     private float moveSpeed = 0f;
     private float m_currentSpeed = 0;
     private float currentSpeed
@@ -28,7 +26,7 @@ public class MoveController : MonoBehaviour {
 
     public GameObject player;
     private Rigidbody rgb;
-    private Transform camTransform;
+    public Transform camTransform;
     public Animator animator;
 
     private Quaternion deltaQ = Quaternion.identity;
@@ -38,11 +36,12 @@ public class MoveController : MonoBehaviour {
     private void Awake()
     {
         instance = this;
-        camTransform = GameObject.Find("CamTransform").GetComponent<Transform>();
-        player = GameObject.Find("Player");
+        camTransform = transform.GetChild(1).transform;//GameObject.Find("CamTransform").GetComponent<Transform>();
+        StartCoroutine(gameObject.AddComponent<RayCastManager>().StartRay(this.gameObject,GetComponentInChildren<Camera>()));
+
+        player = transform.GetChild(0).gameObject;//GameObject.Find("Player");
         rgb = GetComponent<Rigidbody>();
         animator = player.GetComponent<Animator>();
-
         StartLogic();
     }
 
@@ -104,6 +103,7 @@ public class MoveController : MonoBehaviour {
         StateManager.isJumping = true;
         float speed = currentSpeed;
         currentSpeed = 0;
+        yield return new WaitWhile(() => animator.GetCurrentAnimatorStateInfo(0).IsName("JUMP00"));
         animator.SetFloat("JumpSpeed", 1 + (speed / moveSpeed));
         yield return new WaitUntil(() => animator.GetCurrentAnimatorStateInfo(0).IsName("JUMP00"));
         yield return new WaitWhile(() => animator.GetCurrentAnimatorStateInfo(0).normalizedTime % 1 < 0.15f);// wait for animation sinc
@@ -113,19 +113,19 @@ public class MoveController : MonoBehaviour {
         rgb.AddForce(transform.rotation * v, ForceMode.Impulse);
         rgb.AddForce(player.transform.rotation * f, ForceMode.Force);
         yield return new WaitWhile(() => StateManager.isGrounded);
-        //yield return new WaitWhile(() => animator.GetCurrentAnimatorStateInfo(0).normalizedTime % 1 < 0.3f);
-        bool isStoppedAnim = false;
-        while (!StateManager.isGrounded || StateManager.isFlying)
-        {
 
-            if (animator.GetCurrentAnimatorStateInfo(0).normalizedTime % 1 > 0.4f && !isStoppedAnim)
+        yield return new WaitUntil(() => animator.GetCurrentAnimatorStateInfo(0).normalizedTime % 1 > 0.4f);
+        animator.SetFloat("JumpSpeed", 0);
+        if (!StateManager.isFlying)
+            while (!StateManager.isGrounded)
             {
-                animator.SetFloat("JumpSpeed", 0);
-                isStoppedAnim = true;
+                addGravityForce();
+                yield return null;
             }
-            yield return null;
-        }
+        //yield return new WaitUntil(() => StateManager.isGrounded || !StateManager.isFlying);
         UpdateDeltaQ();
+        resetVelocity(Vector3.zero);
+        if (StateManager.isGrounded) animator.SetFloat("JumpSpeed", 1 + (speed / moveSpeed));
         yield return new WaitWhile(() => animator.GetCurrentAnimatorStateInfo(0).normalizedTime < 0.7f);
         StateManager.isJumping = false;
     }
