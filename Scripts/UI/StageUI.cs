@@ -7,7 +7,7 @@ using UnityEngine.SceneManagement;
 //스테이지에 특화된 UI. Main과는 차별성을 갖는다.
 public class StageUI :UIManager {
     //public static Text textTime;
-
+    public float maxStage = 2;
     public static new StageUI instance;
     public GameObject InventoryUI;
     public GameObject ItemDock;
@@ -16,6 +16,10 @@ public class StageUI :UIManager {
     public GameObject TargetInfo;
     public Text TargetName;
 
+    public GameObject DistanceInfo;
+    public Text DistanceText;
+
+    public GameObject StageInfo;
     public GameObject triggerUI;
 
     void Awake()
@@ -31,6 +35,8 @@ public class StageUI :UIManager {
             TargetInfo.SetActive(false);
         if (InventoryUI != null)
             InventoryUI.SetActive(false);
+        if(StageInfo != null)
+            StageInfo.SetActive(false);
         StartCoroutine(GetESC());
         //StartCoroutine(GetKey());
     }
@@ -49,6 +55,12 @@ public class StageUI :UIManager {
         TargetInfo = GameObject.Find("TargetInfo");
         TargetName = TargetInfo.GetComponentInChildren<Text>();
 
+        DistanceInfo = GameObject.Find("DistanceInfo");
+        DistanceText = DistanceInfo.GetComponentInChildren<Text>();
+        DistanceInfo.SetActive(false);
+
+        StageInfo = GameObject.Find("StageInfo");
+
         InventoryUI = GameObject.Find("InventoryUI");
         ItemDock = GameObject.Find("ItemDock");
 
@@ -61,8 +73,6 @@ public class StageUI :UIManager {
         {
             if (Input.GetKeyDown(KeyCode.Escape))
             {
-                //if (StateManager.InventoryEnabled) ToggleInventory(false);
-                //else 
                 if (!StateManager.isPaused) Pause();
                 else Resume();
             }
@@ -70,7 +80,7 @@ public class StageUI :UIManager {
             //yield return new WaitForEndOfFrame();
         }
     }
-    /*IEnumerator GetKey()
+    IEnumerator GetKey()
     {      
         while(true)
         {
@@ -79,13 +89,13 @@ public class StageUI :UIManager {
                 yield return null;
                 continue;
             }
-            if(Input.GetKeyDown(KeyCode.I))
+            if(Input.GetKey(KeyCode.LeftControl)&& Input.GetKeyDown(KeyCode.T))
             {
-                ToggleInventory(!StateManager.InventoryEnabled);
+                CommandCtrl.instance.ToggleCmd();
             }
             yield return null;
         }
-    }*/
+    }
     public void UpdateTime(int t)
     {
         //textTime.text = "Time" + t.ToString();
@@ -111,6 +121,60 @@ public class StageUI :UIManager {
         TargetInfo.SetActive(false);
     }
 
+    public void EnableDistanceInfo()
+    {
+        DistanceText.text = "착지";
+        DistanceInfo.SetActive(true);
+    }
+    public void DisableDistanceInfo()
+    {
+        DistanceInfo.SetActive(false);
+    }
+    public void SetSuccessMessage()
+    {
+        DistanceText.text = "성공";
+    }
+    public void SetFailedMessage()
+    {
+        DistanceText.text = "실패";
+    }
+    public void ShowSecMessage()
+    {
+        StartCoroutine(_ShowSecMessage());
+    }
+    public IEnumerator _ShowSecMessage()
+    {
+        DistanceInfo.SetActive(true);
+        yield return new WaitForSeconds(1);
+        DistanceInfo.SetActive(false);
+    }
+
+    public IEnumerator ShowStageClear(int stageNum)
+    {
+        StageInfo.GetComponentInChildren<Text>().text = "Stage " + stageNum + " Clear";
+        StageInfo.SetActive(true);
+        yield return new WaitForSeconds(1.5f);
+        StageInfo.SetActive(false);
+        yield return new WaitForSeconds(0.7f);
+        if (stageNum < maxStage) StartCoroutine(ShowStageStart(stageNum + 1));// 추후 수정.
+        else SelectScene("Main");
+    }
+
+    private IEnumerator ShowStageStart(int stageNum)
+    {
+        StageInfo.GetComponentInChildren<Text>().text = "Stage " + stageNum + " Start";
+        StageInfo.SetActive(true);
+        yield return new WaitForSeconds(1.5f);
+        StageInfo.SetActive(false);
+    }
+
+    public IEnumerator ShowTryAgain()
+    {
+        StageInfo.GetComponentInChildren<Text>().text = "Try Again!";
+        StageInfo.SetActive(true);
+        yield return new WaitForSeconds(1.5f);
+        StageInfo.SetActive(false);
+    }
     /*public void ToggleInventory(bool B)
     {
         InventoryUI.SetActive(B);

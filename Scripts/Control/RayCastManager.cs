@@ -5,14 +5,19 @@ using UnityEngine;
 public class RayCastManager : MonoBehaviour {
 
 
-    public IEnumerator StartRay(GameObject player,Camera cam)
+    public float maxDistance = 1000;
+    public static RayCastManager instance;
+    private void Awake()
     {
-        yield return new WaitUntil(() => StateManager.isPlayerMaked);
-        StartCoroutine(CheckGround(player));
+        instance = this;
+    }
+    public void StartRay(GameObject player,Camera cam)
+    {
         StartCoroutine(awareWorld(cam));
     }
     IEnumerator CheckGround(GameObject player)
     {
+        Vector3 currentPlaneNormal = player.transform.up.normalized;
         var endOfFrame = new WaitForEndOfFrame();
         while (true)
         {
@@ -20,27 +25,29 @@ public class RayCastManager : MonoBehaviour {
             RaycastHit hit;
             while (true)
             {
-                /*if (transform.parent != null)
-                {
-                    //MoveController.instance.resetVelocity(Vector3.zero);
-                    yield return null;
-                    continue;
-                }*/
+                //if (transform.parent != null)
+                //{
+                 //   //MoveController.instance.resetVelocity(Vector3.zero);
+                 //   yield return null;
+                 //   continue;
+               // }
                 // Debug.DrawRay(player.transform.position + player.transform.rotation * Vector3.up * dist, player.transform.rotation * Vector3.down * (dist + 0.5f), Color.red, Time.deltaTime);
                 if (Physics.Raycast(player.transform.position + player.transform.rotation * Vector3.up * dist, player.transform.rotation * Vector3.down, out hit, dist + 0.5f))
                 {
 
                     if (hit.collider.tag == "Ground" && !StateManager.isFlying)
                     {
-                        if (Vector3.Angle(hit.normal.normalized, player.transform.up.normalized) % 360 != 0)
+                        if (Vector3.Angle(hit.normal.normalized, currentPlaneNormal) != 0 && transform.parent == null)
                         {
+                            Debug.Log("111");
+                            currentPlaneNormal = hit.normal.normalized;
                             StartCoroutine(GroundChanger.ChangeGroundOnWalk(player.transform, hit.transform, hit.normal));
                         }
                         if (hit.collider.gameObject.Equals(StateManager.currentGround)) StateManager.isGrounded = true;
                         else if (!StateManager.isFlying && !StateManager.isGroundChanging)
                         {
+
                             StartCoroutine(GroundChanger.ChangeGroundOnWalk(player.transform, hit.transform, hit.normal));
-                            Debug.Log("Case 2");
                         }
                         else if (StateManager.isGroundChanging) StateManager.isGrounded = true;
                     }
@@ -58,20 +65,19 @@ public class RayCastManager : MonoBehaviour {
     }
     IEnumerator awareWorld(Camera cam)
     {
-        float enabledDir = 200;
         Vector2 input = new Vector2(Screen.width / 2.0f, Screen.height / 2.0f);
         RaycastHit hit;
         while (true)
         {
             Ray ray = cam.ScreenPointToRay(input);
             
-            if (Physics.Raycast(ray, out hit, enabledDir) && !hit.collider.tag.Equals("Untagged"))
+            if (Physics.Raycast(ray, out hit, maxDistance))// && !hit.collider.tag.Equals("Untagged"))
             {
                 if (hit.collider.tag.Equals("Panel"))
                 {
                     if (!StateManager.useSmallUI)
                     {
-                        StageUI.instance.EnableTargetInfo("Interact (Q)");
+                        StageUI.instance.EnableTargetInfo("Interact (Tab)");
                         StageUI.instance.TargetInfo.transform.position = input + Vector2.up * Screen.height * 0.2f;
                     }
                     else StageUI.instance.DisableTargetInfo();
@@ -85,18 +91,22 @@ public class RayCastManager : MonoBehaviour {
 
                 }
 
-                else if (!StateManager.useSmallUI && hit.collider.CompareTag("Ground")&& hit.distance > 20)// && !StateManager.isFlying && !hit.transform.gameObject.Equals(StateManager.currentGround))
+               /* else if (!StateManager.useSmallUI && hit.collider.CompareTag("Ground")&& StateManager.isFloating && hit.distance > 10 && hit.distance < 20)// && !StateManager.isFlying && !hit.transform.gameObject.Equals(StateManager.currentGround))
                 {
                     StageUI.instance.EnableTargetInfo(hit.collider.name);
                     StageUI.instance.ShowDistance((int)hit.distance);
-                    StageUI.instance.TargetInfo.transform.position = input + Vector2.up * Screen.height * 0.2f;
+                    StageUI.instance.TargetInfo.transform.position = input + Vector2.up * Screen.height * 0.4f;
                     Debug.DrawRay(Vector3.zero, hit.transform.forward, Color.yellow);
-                    if (Input.GetKey(KeyCode.Z) && !StateManager.isFlying)
+                    if(Input.GetKey(KeyCode.LeftShift))
+                    {
+                        StateManager.successLanding = true;
+                    }
+                    /*if (Input.GetKey(KeyCode.Z) && !StateManager.isFlying)
                     {
                         Debug.Log("StartFly");
                         StartCoroutine(GroundChanger.ChangeGroundOnJump(MoveController.instance.transform, hit.transform, hit.normal, hit.point, () => StartCoroutine(MoveController.instance.JumpLogic(4))));
                     }
-                }
+                }*/
                 else StageUI.instance.DisableTargetInfo();
             }
             else if (!(StateManager.isPaused))
@@ -110,7 +120,7 @@ public class RayCastManager : MonoBehaviour {
 
 
             }
-            yield return new WaitForEndOfFrame();
+            yield return new WaitForFixedUpdate();
         }
     }
 }

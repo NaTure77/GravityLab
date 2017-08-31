@@ -50,7 +50,7 @@ public class UIManager : MonoBehaviour {
         //MousePointCtrl.active = false;
         Cursor.visible = true;
         Cursor.lockState = CursorLockMode.None;
-        //Time.timeScale = 0;
+        Time.timeScale = 0;
         playUI.SetActive(false);
         pauseMenu.SetActive(true);
     }

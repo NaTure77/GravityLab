@@ -5,14 +5,23 @@ using UnityEngine.EventSystems;
 
 public class StateManager : MonoBehaviour {
 
-    public static bool isPlayerMaked = false;
     public static bool isPaused = false;// UIManager
-    public static bool InventoryEnabled = false;//StageUI
+    //public static bool InventoryEnabled = false;//StageUI
     public static bool useSmallUI = false;//SmallUITool
+
     public static bool isFlying = false;
+    public static bool isFloating = false;
+    public static bool isStanding = true;
+    public static bool isMoveable = true;
+    public static bool isFlyable = true;
     public static bool isGroundChanging = false;
+    public static bool successLanding = false;
+
     public static GameObject currentGround = null;
-    public static bool isGrounded = true;
+    public static Vector3 currentPosition = Vector3.zero;
+    public static Quaternion currentRotation = Quaternion.identity;
+    public static bool isGrounded = false;
+    public static bool isColliderGrounded = false;
     public static bool isJumping = false;
     public static class keySet
     {
@@ -34,11 +43,21 @@ public class StateManager : MonoBehaviour {
     void resetAll()
     {
         isPaused = false;
-        InventoryEnabled = false;
+        //InventoryEnabled = false;
         useSmallUI = false;
-        isFlying = false;
-        isGroundChanging = false;
+
         currentGround = null;
+        isFlying = false;
+        isFloating = false;
+        isStanding = true;
+        isMoveable = true;
+        isFlyable = true;
+        isGroundChanging = false;
+        isColliderGrounded = false;
+        successLanding = false;
+        isGrounded = false;
+        isJumping = false;
+
     }
     void Awake()
     {
@@ -50,6 +69,11 @@ public class StateManager : MonoBehaviour {
     {
         while (true)
         {
+            if (isPaused)
+            {
+                yield return null;
+                continue;
+            }
             keySet.h = Input.GetAxis("Horizontal");
             keySet.v = Input.GetAxis("Vertical");
             keySet.front = Input.GetKey(KeyCode.W);
@@ -57,10 +81,10 @@ public class StateManager : MonoBehaviour {
             keySet.back = Input.GetKey(KeyCode.S);
             keySet.right = Input.GetKey(KeyCode.D);
             keySet.moveKey = keySet.front || keySet.left || keySet.back || keySet.right;
-            keySet.attack = Input.GetKey(KeyCode.Mouse0) && !Input.GetKeyUp(KeyCode.Mouse0)&& !(InventoryEnabled || isPaused || useSmallUI);
+            keySet.attack = Input.GetKey(KeyCode.Mouse0) && !Input.GetKeyUp(KeyCode.Mouse0)&& !(/*InventoryEnabled ||*/ isPaused || useSmallUI);
             keySet.aim = (Input.GetKey(KeyCode.Mouse1) || keySet.attack || useSmallUI) &&!isPaused;
             keySet.jump = Input.GetKeyDown(KeyCode.Space);
-            keySet.interact = Input.GetKeyDown(KeyCode.Q);
+            keySet.interact = Input.GetKeyDown(KeyCode.Tab);
 
             if (useSmallUI && keySet.interact)
             {
@@ -72,4 +96,6 @@ public class StateManager : MonoBehaviour {
             yield return null;
         }
     }
+
+
 }

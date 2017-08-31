@@ -23,13 +23,11 @@ public class CamCtrl : MonoBehaviour {
 
     public float followSpeed = 20f;
 
-    bool isWallCrashed = false;
+   // bool isWallCrashed = false;
 
     private void Awake()
     {
         instance = this;
-
-        StateManager.isPlayerMaked = true;
     }
     private void Start()
     {
@@ -45,6 +43,11 @@ public class CamCtrl : MonoBehaviour {
         float deltaY = 0;
         while (true)
         {
+            if(StateManager.isPaused)
+            {
+                yield return null;
+                continue;
+            }
             deltaY = Input.GetAxisRaw("Mouse Y") * sensitivityY;
             deltaX = Input.GetAxisRaw("Mouse X") * sensitivityX;
             if (Time.deltaTime != 0)
@@ -60,7 +63,7 @@ public class CamCtrl : MonoBehaviour {
 
     void ChangeHeading(float aVal, float bVal)
     {
-        if (StateManager.InventoryEnabled) return;
+        //if (StateManager.InventoryEnabled) return;
         y += bVal;
         x += aVal;
         if (y >= 80) y = 80;
@@ -97,10 +100,10 @@ public class CamCtrl : MonoBehaviour {
 
             if (Physics.SphereCast(RaycastPos.position, raySphereradious, RaycastPos.forward, out hit, dist)&&Vector3.Distance(RaycastPos.position, cam.transform.position)<= maxDistanceBetweenPlayer)
             {
-                isWallCrashed = true;
+                //isWallCrashed = true;
                 cam.transform.position = RaycastPos.position + RaycastPos.forward * hit.distance;
             }
-            else isWallCrashed = false;
+           // else isWallCrashed = false;
             yield return null;
         }
     }
