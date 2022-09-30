@@ -69,7 +69,7 @@ public class CamCtrl : MonoBehaviour {
         if (y >= 80) y = 80;
         else if (y <= -60) y = -60;
 
-        WrapAngle(ref y);
+        //WrapAngle(ref y);
         WrapAngle(ref x);
         transform.localEulerAngles = (Vector3.right * y + Vector3.up * x);//new Vector3(y, x, 0);
     }
@@ -103,8 +103,8 @@ public class CamCtrl : MonoBehaviour {
                 //isWallCrashed = true;
                 cam.transform.position = RaycastPos.position + RaycastPos.forward * hit.distance;
             }
-           // else isWallCrashed = false;
-            yield return null;
+            // else isWallCrashed = false;
+            yield return new WaitForEndOfFrame(); //null;
         }
     }
 }

@@ -37,7 +37,7 @@ public class RolypolySystem : MonoBehaviour {
                     else if (Vector3.Angle(hit.normal.normalized, playerObj.up.normalized) != 0 && !StateManager.isGroundChanging)
                     {
                         //Debug.Log("111");
-                        Debug.Log(Vector3.Angle(hit.normal.normalized, playerObj.up.normalized));
+                        //Debug.Log(Vector3.Angle(hit.normal.normalized, playerObj.up.normalized));
                         currentVector = hit.normal;
                         StartCoroutine(GroundChanger.ChangeGroundOnWalk(playerObj.transform, hit.transform, hit.normal));
                     }

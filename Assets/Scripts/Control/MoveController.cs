@@ -203,14 +203,16 @@ public class MoveController : MonoBehaviour {
     {
         moveSpeed = walkSpeed;
         Vector3 moveDir = player.transform.rotation * ((Vector3.forward * StateManager.keySet.v) + (Vector3.right * StateManager.keySet.h));
-        rgb.MovePosition(transform.position + (moveDir.normalized * currentSpeed * Time.deltaTime));
+        transform.position += (moveDir.normalized * currentSpeed * Time.deltaTime);
+        //rgb.MovePosition(transform.position + (moveDir.normalized * currentSpeed * Time.deltaTime));
     }
     void Walk_Default()
     {
         moveSpeed = runSpeed;
         Vector3 v = player.transform.rotation * Vector3.forward;
         //transform.Translate(Vector3.forward.normalized * currentSpeed * Time.deltaTime, player.transform);
-        rgb.MovePosition(transform.position + (v.normalized * currentSpeed * Time.deltaTime));
+        //rgb.MovePosition(transform.position + (v.normalized * currentSpeed * Time.deltaTime));
+        transform.position += (v.normalized * currentSpeed * Time.deltaTime);
         animator.SetFloat("runSpeed", currentSpeed / 30.0f + 0.5f);
     }
 

@@ -35,7 +35,7 @@ public class Transfer : MonoBehaviour {
     {
         blockingWall.SetActive(true);
         isMoving = true;
-        yield return new WaitForSeconds(0.6f);
+        yield return new WaitForSeconds(3f);
         Vector3 destination = toT.position;
         Vector3 fromPosition = transform.position;
         float fromToRate = 0;
@@ -46,7 +46,7 @@ public class Transfer : MonoBehaviour {
         {
             transform.position = Vector3.LerpUnclamped(fromPosition, destination, fromToRate);
             fromToRate += Time.deltaTime / totalTime;
-            yield return new WaitForFixedUpdate();
+            yield return null;//new WaitForFixedUpdate();
         }
         if (fromToRate < 1)
         {

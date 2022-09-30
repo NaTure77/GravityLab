@@ -10,7 +10,7 @@ public class FollowCam : MonoBehaviour {
     {
        // StartCoroutine(Follow());
     }
-    private void Update()
+    private void LateUpdate()
     {
         if (StateManager.isStanding)
         {
